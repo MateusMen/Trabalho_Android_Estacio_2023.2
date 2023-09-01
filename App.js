@@ -1,12 +1,8 @@
 import Quiz from "./components/quiz";
 
   
-function App() {
+export default function App() {
     return (
-        <div className="container my-5">
-            <Quiz />
-        </div>
+            <Quiz/>
     );
 }
-  
-export default App;
