@@ -1,90 +1,105 @@
-import { Text, SafeAreaView,TouchableOpacity } from 'react-native';
-import Styles from './Styles'
+import { Text, TextInput, SafeAreaView,TouchableOpacity,ScrollView,View,Alert,KeyboardAvoidingView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useState, React } from 'react';
 import {Picker} from '@react-native-picker/picker';
+
+import Styles from '../Styles'
+import {useDatabase} from '../src/databaseDetails'
+
 
 export default function Add_question(){
     const {navigate} = useNavigation()
-    const [questionTitle,setQuestionTitle] = useState({questionTitle: ''})
-    const [respostaA,setRespostaA] = useState({respostaA: ''})
-    const [respostaB,setRespostaB] = useState({respostaB: ''})
-    const [respostaC,setRespostaC] = useState({respostaC: ''})
-    const [respostaD,setRespostaD] = useState({respostaD: ''})
-    const [respostaE,setRespostaE] = useState({respostaE: ''})
-    const [correta,setCorreta] = useState()
-
-    const enviarPraDatabase = () =>{
-
-    }
+    const {addPerguntaToDB} = useDatabase()
+    const [perguntaData,setPerguntaData] = useState({questionTitle: '',
+    respostas:[],solucao:'',
+    materia:''})
+    const [respostaTemp, setRespostaTemp] = useState({body: ''})
 
     return(
+
         <SafeAreaView style={Styles.container}>
         <ScrollView>
+        <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'}>
 
     <View style={Styles.inputView}>
-      <TextInput style={Styles.inputText}placeholder="Texto da questão"
+      <TextInput style={Styles.inputText}
+      placeholder="Texto da questão"
       placeholderTextColor="#003f5c"
-      onChangeText={text => setQuestionTitle(text)}
+      onChangeText={text => setPerguntaData({...perguntaData, questionTitle: text})}
+      value={perguntaData.questionTitle}
       />
     </View>
 
     <View style={Styles.inputView}>
-      <TextInput style={Styles.inputText}placeholder="resposta A"
+      <TextInput style={Styles.inputText}
+      placeholder="Adicione um resposta"
       placeholderTextColor="#003f5c"
-      onChangeText={text => setRespostaA(text)}
-      />
+      onChangeText={text => setRespostaTemp({...respostaTemp, body: text})}
+      value={respostaTemp.body}/>
+      </View>
+      <View>
+      <TouchableOpacity
+          onPress={()=>{perguntaData.respostas.push(respostaTemp.body);
+          setRespostaTemp({...respostaTemp, body: ""})}}
+          style={Styles.button}>
+          <Text>Adicionar resposta</Text>
+        </TouchableOpacity>
     </View>
-
-    <View style={Styles.inputView}>
-      <TextInput style={Styles.inputText}placeholder="resposta B"
-      placeholderTextColor="#003f5c"
-      onChangeText={text => setRespostaB(text)}
-      />
+    
+    <View style={Styles.paragraph}>
+    <Text>Resposta correta: {perguntaData.solucao}</Text>
     </View>
+    
+    <View style={Styles.paragraph}>
+      
+      {perguntaData.respostas.map((choice) => (
+        
+        <TouchableOpacity
+          onPress={() => setPerguntaData({...perguntaData, solucao: choice})}
+          style={Styles.button}>
+          <Text>{choice}</Text>
+        </TouchableOpacity>
+        
+      ))}
 
-    <View style={Styles.inputView}>
-      <TextInput style={Styles.inputText}placeholder="resposta C"
-      placeholderTextColor="#003f5c"
-      onChangeText={text => setRespostaC(text)}
-      />
     </View>
+    
 
-    <View style={Styles.inputView}>
-      <TextInput style={Styles.inputText}placeholder="resposta D"
-      placeholderTextColor="#003f5c"
-      onChangeText={text => setRespostaD(text)}
-      />
-    </View>
-
-    <View style={Styles.inputView}>
-      <TextInput style={Styles.inputText}placeholder="resposta E"
-      placeholderTextColor="#003f5c"
-      onChangeText={text => setRespostaE(text)}
-      />
+    <View style={Styles.paragraph}>
+      <Text>Materia:</Text>
     </View>
 
     <Picker
-    selectedValue={correta}
-    onValueChange={(itemValue,itemIndex) => setCorreta(itemValue)} 
+    dropdownIconColor={"#007bff"}
+    dropdownIconRippleColor={"#007bff"}
+    itemStyle={Styles.inputText}
+    mode='dropdown'
+    selectedValue={perguntaData}
+    onValueChange={(itemValue) => setPerguntaData({...perguntaData, materia: itemValue})} 
     >
-        <Picker.Item label='A' value='A'/>
-        <Picker.Item label='B' value='B'/>
-        <Picker.Item label='C' value='C'/>
-        <Picker.Item label='D' value='D'/>
-        <Picker.Item label='E' value='E'/>
+        <Picker.Item label={perguntaData.materia} value=''/>
+        <Picker.Item label='Programaçâo em C' value='Programaçâo em C'/>
+        <Picker.Item label='Ilustração' value='Ilustração'/>
+        <Picker.Item label='Programação em Java' value='Programação em Java'/>
+        <Picker.Item label='Programação para dispositivos moveis' value='Programação para dispositivos moveis'/>
     </Picker>
 
+    
         <TouchableOpacity style={Styles.button} 
-        onPress={enviarPraDatabase}>
+        onPress={()=>{if (perguntaData.questionTitle == ''||
+        perguntaData.solucao == '' ||
+        perguntaData.materia == ''){
+        Alert.alert("Preencha todos os campos!")
+      }else {addPerguntaToDB(perguntaData)}}}>
         <Text>Enviar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={Styles.button} 
-        onPress={navigate(PaginaProfessor)}>
+        onPress={()=>navigate('PaginaProfessor')}>
         <Text>retornar para pagina do professor</Text>
         </TouchableOpacity>
 
+        </KeyboardAvoidingView>
         </ScrollView>
         </SafeAreaView>
     );
